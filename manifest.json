@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "FocusRewire",
+  "version": "1.0.0",
+  "description": "AI-powered attention filtering — transform YouTube into a focused learning environment.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "alarms",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://openrouter.ai/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FocusRewire",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": [
+        "utils/scoring.js",
+        "utils/searchGuard.js",
+        "utils/analytics.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["dashboard.html", "dashboard.js", "utils/analytics.js"],
+      "matches": ["https://www.youtube.com/*"]
+    }
+  ]
+}

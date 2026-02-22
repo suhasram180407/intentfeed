@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusRewire – Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+      --red: #ff4444;
+      --red-dim: #cc2222;
+      --red-glow: rgba(255, 68, 68, 0.15);
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --surface3: #222222;
+      --border: #2a2a2a;
+      --text: #f0f0f0;
+      --text-dim: #888888;
+      --text-faint: #444444;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      width: 860px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--red);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span { color: var(--red); }
+
+    .header-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    .btn-danger:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    /* ── ACTIVE SESSION BANNER ── */
+    .session-banner {
+      background: linear-gradient(135deg, var(--red-glow), transparent);
+      border-bottom: 1px solid rgba(255, 68, 68, 0.2);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .session-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .session-topic {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .session-mode {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--surface3);
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .session-mode.strict { color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
+    .session-mode.casual { color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+
+    /* ── LAYOUT ── */
+    .main {
+      padding: 24px 28px;
+      display: grid;
+      gap: 20px;
+    }
+
+    /* ── STAT CARDS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover { border-color: var(--red); }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--red);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .stat-card:hover::before { opacity: 1; }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: 'Space Mono', monospace;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+
+    .stat-icon {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 20px;
+      opacity: 0.3;
+    }
+
+    /* ── TWO COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .chart-card.full { grid-column: 1 / -1; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: -0.3px;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--surface3);
+      color: var(--text-dim);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 160px;
+    }
+
+    .chart-wrap.tall { height: 200px; }
+
+    /* ── TOPICS LIST ── */
+    .topics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .topic-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      transition: border-color 0.15s;
+    }
+
+    .topic-item:hover { border-color: var(--red); }
+
+    .topic-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .topic-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 68, 68, 0.1);
+      color: var(--red);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── EFFICIENCY METER ── */
+    .efficiency-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+      gap: 8px;
+    }
+
+    .efficiency-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .efficiency-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .efficiency-ring .ring-bg {
+      fill: none;
+      stroke: var(--surface3);
+      stroke-width: 8;
+    }
+
+    .efficiency-ring .ring-fill {
+      fill: none;
+      stroke: var(--red);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 251;
+      stroke-dashoffset: 251;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .efficiency-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .efficiency-pct {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    .efficiency-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .efficiency-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    /* ── STREAK / TIMELINE ── */
+    .streak-row {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .streak-day {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .streak-bar {
+      width: 100%;
+      background: var(--surface3);
+      border-radius: 3px;
+      min-height: 4px;
+      transition: background 0.2s;
+    }
+
+    .streak-bar.active { background: var(--red); }
+    .streak-bar:hover { background: var(--red) !important; opacity: 0.8; }
+
+    .streak-lbl {
+      font-size: 9px;
+      color: var(--text-faint);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── SESSION LOG ── */
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .log-list::-webkit-scrollbar { width: 4px; }
+    .log-list::-webkit-scrollbar-track { background: var(--surface2); }
+    .log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .log-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .log-dot.block { background: var(--red); }
+    .log-dot.short { background: var(--yellow); }
+    .log-dot.search { background: #60a5fa; }
+
+    .log-text { color: var(--text-dim); flex: 1; }
+    .log-time { color: var(--text-faint); font-family: 'Space Mono', monospace; font-size: 10px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--text-faint);
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .empty-icon { font-size: 32px; opacity: 0.4; }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 16px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-faint);
+      font-family: 'Space Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎯</div>
+      <div class="logo-text">Focus<span>Rewire</span></div>
+    </div>
+    <div class="header-meta" id="headerDate">Loading...</div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="exportData()">↓ Export</button>
+      <button class="btn btn-danger" onclick="resetAnalytics()">Reset Stats</button>
+    </div>
+  </div>
+
+  <!-- SESSION BANNER -->
+  <div class="session-banner" id="sessionBanner" style="display:none">
+    <div class="session-info">
+      <div class="dot"></div>
+      <span style="font-size:12px; color:var(--text-dim)">Focusing on</span>
+      <span class="session-topic" id="bannerTopic">—</span>
+      <span class="session-mode" id="bannerMode">STRICT</span>
+    </div>
+    <div style="font-size:12px; color:var(--text-dim)">Session active</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- STAT CARDS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-label">Videos Blocked</div>
+        <div class="stat-value" id="statBlocked">0</div>
+        <div class="stat-sub">distractions avoided</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-label">Shorts Stopped</div>
+        <div class="stat-value" id="statShorts">0</div>
+        <div class="stat-sub">short videos hidden</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔍</div>
+        <div class="stat-label">Searches Guarded</div>
+        <div class="stat-value" id="statSearches">0</div>
+        <div class="stat-sub">off-topic searches</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏱</div>
+        <div class="stat-label">Time Saved</div>
+        <div class="stat-value" id="statTime">0</div>
+        <div class="stat-sub">estimated minutes</div>
+      </div>
+    </div>
+
+    <!-- WEEKLY CHART + EFFICIENCY -->
+    <div class="two-col">
+      <div class="chart-card">
+        <div class="card-header">
+          <div class="card-title">Weekly Activity</div>
+          <div class="card-badge" id="weekTotal">0 this week</div>
+        </div>
+        <div class="streak-row" id="streakRow">
+          <!-- populated by JS -->
+        </div>
+        <div class="chart-wrap tall" style="margin-top:16px">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <div class="card-title">Focus Efficiency</div>
+        </div>
+        <div class="efficiency-wrap">
+          <div class="efficiency-ring">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="40"/>
+              <circle class="ring-fill" id="efficiencyRing" cx="50" cy="50" r="40"/>
+            </svg>
+            <div class="efficiency-center">
+              <div class="efficiency-pct" id="efficiencyPct">0%</div>
+              <div class="efficiency-label">Focus</div>
+            </div>
+          </div>
+          <div class="efficiency-desc" id="efficiencyDesc">Start a session to track your focus efficiency.</div>
+        </div>
+
+        <div class="card-header" style="margin-top:16px">
+          <div class="card-title">Breakdown</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="breakdownChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPICS + LOG -->
+    <div class="two-col">
+      <div class="chart-card">
+        <div class="card-header">
+          <div class="card-title">Topics Studied</div>
+          <div class="card-badge" id="topicCount">0 topics</div>
+        </div>
+        <div class="topics-list" id="topicsList">
+          <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            No topics yet. Start a focus session!
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <div class="card-title">Session Summary</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+          <div style="background:var(--surface2); border-radius:8px; padding:12px; border:1px solid var(--border);">
+            <div style="font-size:10px; color:var(--text-dim); font-family:'Space Mono',monospace; margin-bottom:4px;">SESSIONS</div>
+            <div style="font-size:22px; font-weight:700; font-family:'Space Mono',monospace; color:var(--red)" id="sessionsCount">0</div>
+          </div>
+          <div style="background:var(--surface2); border-radius:8px; padding:12px; border:1px solid var(--border);">
+            <div style="font-size:10px; color:var(--text-dim); font-family:'Space Mono',monospace; margin-bottom:4px;">FOCUS MINS</div>
+            <div style="font-size:22px; font-weight:700; font-family:'Space Mono',monospace; color:var(--red)" id="focusMins">0</div>
+          </div>
+        </div>
+
+        <div class="card-header">
+          <div class="card-title">Recent Activity</div>
+        </div>
+        <div class="log-list" id="logList">
+          <div class="empty-state" style="padding:20px">
+            <div class="empty-icon">📋</div>
+            No activity yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>FocusRewire v1.0</span>
+    <span id="footerLastUpdated">Never updated</span>
+    <span>All data stored locally</span>
+  </div>
+
+  <script src="utils/analytics.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
